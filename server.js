@@ -1,47 +1,65 @@
-const WebSocket = require('ws');
-const http = require('http');
 const express = require('express');
+const http = require('http');
+const WebSocket = require('ws');
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const players = new Set();
+const clients = new Map();
+
+app.use(express.static('public'));
 
 wss.on('connection', (ws) => {
-  // Add new player to the set
-  players.add(ws);
-
-  // Notify all players about the new connection
-  broadcast({ type: 'playerJoined', playerId: ws.playerId });
+  // Handle initial connection
 
   ws.on('message', (message) => {
-    // Handle messages from players
     const data = JSON.parse(message);
-    handleClientMessage(ws, data);
+
+    // Handle different types of messages
+    switch (data.type) {
+      case 'join':
+        handleJoin(ws, data.username);
+        break;
+      case 'message':
+        handleMessage(ws, data.content);
+        break;
+    }
   });
 
   ws.on('close', () => {
-    // Remove player on disconnect
-    players.delete(ws);
-    // Notify all players about the disconnection
-    broadcast({ type: 'playerLeft', playerId: ws.playerId });
+    handleLeave(ws);
   });
 });
 
-function handleClientMessage(ws, data) {
-  // Handle game logic based on client messages
-  // For example: update player positions, scores, etc.
-  broadcast({ type: 'gameUpdate', data });
+function handleJoin(ws, username) {
+  clients.set(ws, { username });
+  broadcast({ type: 'join', username });
+
+  // Send a welcome message to the new user
+  ws.send(JSON.stringify({ type: 'welcome', message: `Welcome, ${username}!` }));
+}
+
+function handleMessage(ws, content) {
+  const { username } = clients.get(ws);
+  broadcast({ type: 'message', username, content });
+}
+
+function handleLeave(ws) {
+  const { username } = clients.get(ws);
+  clients.delete(ws);
+  broadcast({ type: 'leave', username });
 }
 
 function broadcast(message) {
-  // Send a message to all connected players
-  players.forEach((player) => {
-    player.send(JSON.stringify(message));
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(message));
+    }
   });
 }
 
-server.listen(3000, () => {
-  console.log('Server listening on http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server listening on http://localhost:${PORT}`);
 });
