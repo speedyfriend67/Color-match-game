@@ -133,8 +133,16 @@
 
     function applyGravity() {
       const currentPosition = parseInt(player.style.bottom);
-      if (currentPosition > 0) {
-        player.style.bottom = `${currentPosition - gravity}px`;
+      if (!isJumping) {
+        // Normal gravity (going down)
+        if (currentPosition > 0) {
+          player.style.bottom = `${currentPosition - gravity}px`;
+        }
+      } else {
+        // Inverted gravity (going up while jumping)
+        if (currentPosition < window.innerHeight - 50) {
+          player.style.bottom = `${currentPosition + gravity}px`;
+        }
       }
     }
 
