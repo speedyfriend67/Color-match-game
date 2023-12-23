@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <script>
+    const ws = new WebSocket('ws://localhost:3000');
+
+    ws.addEventListener('open', () => {
+      console.log('Connected to the server');
+      ws.send(JSON.stringify({ type: 'hello' }));
+    });
+
+    ws.addEventListener('message', (event) => {
+      const data = JSON.parse(event.data);
+      console.log('Received message:', data);
+    });
+
+  </script>
+</body>
+</html>
