@@ -4,156 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background-color: #000;
-      color: #fff;
-    }
-
-    #game-container {
-      position: relative;
-      height: 100vh;
-    }
-
-    #player {
-      position: absolute;
-      bottom: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 50px;
-      height: 50px;
-      border-radius: 5px; /* Updated to make it look more like a bird */
-      background-color: blue;
-      cursor: pointer;
-    }
-
-    .obstacle, .spinner {
-      position: absolute;
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-    }
-
-    .obstacle {
-      background-color: #ff0000; /* Falling circles */
-    }
-
-    .spinner {
-      animation: spin 2s linear infinite; /* Spinning squares */
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+    /* Your game styles go here */
   </style>
 </head>
 <body>
-  <div id="game-container">
-    <div id="player"></div>
-  </div>
-
   <script>
-    const gameContainer = document.getElementById('game-container');
-    const player = document.getElementById('player');
-    let playerColor = 'blue';
-    let score = 0;
-    let gravity = 2; // Adjust gravity as needed
-    let isJumping = false;
+    const ws = new WebSocket('ws://localhost:3000');
 
-    function createObstacle() {
-      const obstacle = document.createElement('div');
-      obstacle.classList.add('obstacle');
-      obstacle.style.bottom = '100vh';
-      obstacle.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
-      obstacle.style.backgroundColor = getRandomColor();
-      obstacle.addEventListener('click', () => checkCollision(obstacle));
-      gameContainer.appendChild(obstacle);
-    }
+    ws.addEventListener('open', () => {
+      console.log('Connected to the server');
+    });
 
-    function createSpinner() {
-      const spinner = document.createElement('div');
-      spinner.classList.add('spinner');
-      spinner.style.bottom = '100vh';
-      spinner.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
-      spinner.style.backgroundColor = getRandomColor();
-      spinner.addEventListener('click', () => checkCollision(spinner));
-      gameContainer.appendChild(spinner);
-    }
+    ws.addEventListener('message', (event) => {
+      const data = JSON.parse(event.data);
+      handleServerMessage(data);
+    });
 
-    function getRandomColor() {
-      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
-      return colors[Math.floor(Math.random() * colors.length)];
-    }
-
-    function checkCollision(obstacle) {
-      if (obstacle.style.backgroundColor === playerColor) {
-        obstacle.remove();
-        score++;
-        createObstacle();
-        createSpinner();
-      } else {
-        gameOver();
+    function handleServerMessage(data) {
+      // Handle server messages and update the game accordingly
+      switch (data.type) {
+        case 'playerJoined':
+          console.log(`Player ${data.playerId} joined`);
+          break;
+        case 'playerLeft':
+          console.log(`Player ${data.playerId} left`);
+          break;
+        case 'gameUpdate':
+          console.log('Game update:', data.data);
+          break;
+        // Add more cases based on your game's needs
       }
     }
 
-    function gameOver() {
-      alert(`Game Over! Your score is ${score}`);
-      resetGame();
-    }
+    // Your game logic and user interaction handling go here
 
-    function resetGame() {
-      playerColor = 'blue';
-      score = 0;
-      gameContainer.innerHTML = '<div id="player"></div>';
-      player.style.backgroundColor = playerColor;
-      createObstacle();
-      createSpinner();
-    }
-
-    function jump() {
-      if (!isJumping) {
-        isJumping = true;
-        let jumpCount = 0;
-        const jumpInterval = setInterval(() => {
-          const currentPosition = parseInt(player.style.bottom);
-          player.style.bottom = `${currentPosition + 10}px`;
-
-          jumpCount++;
-          if (jumpCount > 20) {
-            clearInterval(jumpInterval);
-            isJumping = false;
-          }
-        }, 20);
-      }
-    }
-
-    player.addEventListener('click', jump);
-
-    function applyGravity() {
-      const currentPosition = parseInt(player.style.bottom);
-      if (!isJumping) {
-        // Normal gravity (going down)
-        if (currentPosition > 0) {
-          player.style.bottom = `${currentPosition - gravity}px`;
-        }
-      } else {
-        // Inverted gravity (going up while jumping)
-        if (currentPosition < window.innerHeight - 50) {
-          player.style.bottom = `${currentPosition + gravity}px`;
-        }
-      }
-    }
-
-    function gameLoop() {
-      applyGravity();
-      requestAnimationFrame(gameLoop);
-    }
-
-    createObstacle();
-    createSpinner();
-    gameLoop();
   </script>
 </body>
 </html>
