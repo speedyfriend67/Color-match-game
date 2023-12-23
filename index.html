@@ -4,16 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* Your styles go here */
+    body {
+      margin: 0;
+      background-color: #000;
+      color: #fff;
+    }
+
+    /* Your other styles go here */
 
     #chat-container {
       margin-bottom: 20px;
     }
 
     #join-leave-log {
-      background-color: #f0f0f0;
+      background-color: #333;
+      color: #fff;
       padding: 10px;
       border-radius: 5px;
+    }
+
+    input, button {
+      background-color: #333;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -25,54 +41,7 @@
   <div id="join-leave-log"></div>
 
   <script>
-    const ws = new WebSocket('ws://localhost:3000');
-
-    ws.addEventListener('message', (event) => {
-      const data = JSON.parse(event.data);
-      handleServerMessage(data);
-    });
-
-    function handleServerMessage(data) {
-      const chatContainer = document.getElementById('chat-container');
-      const joinLeaveLogContainer = document.getElementById('join-leave-log');
-
-      switch (data.type) {
-        case 'join':
-          chatContainer.innerHTML += `<p><strong>${data.username} joined the chat</strong></p>`;
-          break;
-        case 'message':
-          chatContainer.innerHTML += `<p><strong>${data.username}:</strong> ${data.content}</p>`;
-          break;
-        case 'leave':
-          chatContainer.innerHTML += `<p><strong>${data.username} left the chat</strong></p>`;
-          break;
-        case 'welcome':
-          chatContainer.innerHTML += `<p>${data.message}</p>`;
-          break;
-        case 'joinLeaveLog':
-          // Update join-leave log
-          joinLeaveLogContainer.innerHTML = '<p><strong>Join/Leave Log:</strong></p>';
-          data.joinLeaveLog.forEach((logEntry) => {
-            const timestamp = new Date(logEntry.timestamp).toLocaleTimeString();
-            joinLeaveLogContainer.innerHTML += `<p>${timestamp} - ${logEntry.type}: ${logEntry.username}</p>`;
-          });
-          break;
-      }
-    }
-
-    function joinChat() {
-      const usernameInput = document.getElementById('username');
-      const username = usernameInput.value.trim();
-
-      if (username) {
-        // Send a 'join' message to the server
-        ws.send(JSON.stringify({ type: 'join', username }));
-
-        // Hide the username input and join button after joining
-        usernameInput.style.display = 'none';
-        document.querySelector('button').style.display = 'none';
-      }
-    }
+    // Your JavaScript code goes here
   </script>
 </body>
 </html>
