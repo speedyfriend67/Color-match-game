@@ -7,12 +7,13 @@
     body {
       margin: 0;
       overflow: hidden;
+      background-color: #000;
+      color: #fff;
     }
 
     #game-container {
       position: relative;
       height: 100vh;
-      background-color: #f0f0f0;
     }
 
     #player {
@@ -27,12 +28,24 @@
       cursor: pointer;
     }
 
-    .obstacle {
+    .obstacle, .spinner {
       position: absolute;
       width: 50px;
       height: 50px;
-      border-radius: 50%;
       cursor: pointer;
+    }
+
+    .obstacle {
+      background-color: #ff0000; /* Falling circles */
+    }
+
+    .spinner {
+      animation: spin 2s linear infinite; /* Spinning squares */
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -57,8 +70,18 @@
       gameContainer.appendChild(obstacle);
     }
 
+    function createSpinner() {
+      const spinner = document.createElement('div');
+      spinner.classList.add('spinner');
+      spinner.style.bottom = '100vh';
+      spinner.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
+      spinner.style.backgroundColor = getRandomColor();
+      spinner.addEventListener('click', () => checkCollision(spinner));
+      gameContainer.appendChild(spinner);
+    }
+
     function getRandomColor() {
-      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00']; // Add more colors if needed
+      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
       return colors[Math.floor(Math.random() * colors.length)];
     }
 
@@ -67,6 +90,7 @@
         obstacle.remove();
         score++;
         createObstacle();
+        createSpinner();
       } else {
         gameOver();
       }
@@ -83,14 +107,17 @@
       gameContainer.innerHTML = '<div id="player"></div>';
       player.style.backgroundColor = playerColor;
       createObstacle();
+      createSpinner();
     }
 
     player.addEventListener('click', () => {
       player.style.bottom = `${parseInt(player.style.bottom) + 50}px`;
       createObstacle();
+      createSpinner();
     });
 
     createObstacle();
+    createSpinner();
   </script>
 </body>
 </html>
