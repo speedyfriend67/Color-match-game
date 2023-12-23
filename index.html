@@ -3,11 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Your styles go here */
+
+    #chat-container {
+      margin-bottom: 20px;
+    }
+
+    #join-leave-log {
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
   <input type="text" id="username" placeholder="Enter your username">
   <button onclick="joinChat()">Join Chat</button>
+
   <div id="chat-container"></div>
+  <div id="join-leave-log"></div>
 
   <script>
     const ws = new WebSocket('ws://localhost:3000');
@@ -19,18 +34,28 @@
 
     function handleServerMessage(data) {
       const chatContainer = document.getElementById('chat-container');
+      const joinLeaveLogContainer = document.getElementById('join-leave-log');
+
       switch (data.type) {
         case 'join':
-          chatContainer.innerHTML += `<p>${data.username} joined the chat</p>`;
+          chatContainer.innerHTML += `<p><strong>${data.username} joined the chat</strong></p>`;
           break;
         case 'message':
           chatContainer.innerHTML += `<p><strong>${data.username}:</strong> ${data.content}</p>`;
           break;
         case 'leave':
-          chatContainer.innerHTML += `<p>${data.username} left the chat</p>`;
+          chatContainer.innerHTML += `<p><strong>${data.username} left the chat</strong></p>`;
           break;
         case 'welcome':
           chatContainer.innerHTML += `<p>${data.message}</p>`;
+          break;
+        case 'joinLeaveLog':
+          // Update join-leave log
+          joinLeaveLogContainer.innerHTML = '<p><strong>Join/Leave Log:</strong></p>';
+          data.joinLeaveLog.forEach((logEntry) => {
+            const timestamp = new Date(logEntry.timestamp).toLocaleTimeString();
+            joinLeaveLogContainer.innerHTML += `<p>${timestamp} - ${logEntry.type}: ${logEntry.username}</p>`;
+          });
           break;
       }
     }
@@ -48,7 +73,6 @@
         document.querySelector('button').style.display = 'none';
       }
     }
-
   </script>
 </body>
 </html>
