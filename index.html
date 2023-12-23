@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    #game-container {
+      position: relative;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+
+    #player {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: blue;
+      cursor: pointer;
+    }
+
+    .obstacle {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="player"></div>
+  </div>
+
+  <script>
+    const gameContainer = document.getElementById('game-container');
+    const player = document.getElementById('player');
+    let playerColor = 'blue';
+    let score = 0;
+
+    function createObstacle() {
+      const obstacle = document.createElement('div');
+      obstacle.classList.add('obstacle');
+      obstacle.style.bottom = '100vh';
+      obstacle.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
+      obstacle.style.backgroundColor = getRandomColor();
+      obstacle.addEventListener('click', () => checkCollision(obstacle));
+      gameContainer.appendChild(obstacle);
+    }
+
+    function getRandomColor() {
+      const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00']; // Add more colors if needed
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function checkCollision(obstacle) {
+      if (obstacle.style.backgroundColor === playerColor) {
+        obstacle.remove();
+        score++;
+        createObstacle();
+      } else {
+        gameOver();
+      }
+    }
+
+    function gameOver() {
+      alert(`Game Over! Your score is ${score}`);
+      resetGame();
+    }
+
+    function resetGame() {
+      playerColor = 'blue';
+      score = 0;
+      gameContainer.innerHTML = '<div id="player"></div>';
+      player.style.backgroundColor = playerColor;
+      createObstacle();
+    }
+
+    player.addEventListener('click', () => {
+      player.style.bottom = `${parseInt(player.style.bottom) + 50}px`;
+      createObstacle();
+    });
+
+    createObstacle();
+  </script>
+</body>
+</html>
