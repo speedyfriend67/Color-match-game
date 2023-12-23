@@ -7,16 +7,14 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 const clients = new Map();
+const joinLeaveLog = [];
 
 app.use(express.static('public'));
 
 wss.on('connection', (ws) => {
-  // Handle initial connection
-
   ws.on('message', (message) => {
     const data = JSON.parse(message);
 
-    // Handle different types of messages
     switch (data.type) {
       case 'join':
         handleJoin(ws, data.username);
@@ -36,8 +34,8 @@ function handleJoin(ws, username) {
   clients.set(ws, { username });
   broadcast({ type: 'join', username });
 
-  // Send a welcome message to the new user
-  ws.send(JSON.stringify({ type: 'welcome', message: `Welcome, ${username}!` }));
+  joinLeaveLog.push({ type: 'join', username, timestamp: new Date() });
+  broadcastJoinLeaveLog();
 }
 
 function handleMessage(ws, content) {
@@ -49,6 +47,9 @@ function handleLeave(ws) {
   const { username } = clients.get(ws);
   clients.delete(ws);
   broadcast({ type: 'leave', username });
+
+  joinLeaveLog.push({ type: 'leave', username, timestamp: new Date() });
+  broadcastJoinLeaveLog();
 }
 
 function broadcast(message) {
@@ -57,6 +58,10 @@ function broadcast(message) {
       client.send(JSON.stringify(message));
     }
   });
+}
+
+function broadcastJoinLeaveLog() {
+  broadcast({ type: 'joinLeaveLog', joinLeaveLog });
 }
 
 const PORT = process.env.PORT || 3000;
