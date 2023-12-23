@@ -3,17 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    /* Your game styles go here */
-  </style>
 </head>
 <body>
+  <input type="text" id="username" placeholder="Enter your username">
+  <button onclick="joinChat()">Join Chat</button>
+  <div id="chat-container"></div>
+
   <script>
     const ws = new WebSocket('ws://localhost:3000');
-
-    ws.addEventListener('open', () => {
-      console.log('Connected to the server');
-    });
 
     ws.addEventListener('message', (event) => {
       const data = JSON.parse(event.data);
@@ -21,22 +18,36 @@
     });
 
     function handleServerMessage(data) {
-      // Handle server messages and update the game accordingly
+      const chatContainer = document.getElementById('chat-container');
       switch (data.type) {
-        case 'playerJoined':
-          console.log(`Player ${data.playerId} joined`);
+        case 'join':
+          chatContainer.innerHTML += `<p>${data.username} joined the chat</p>`;
           break;
-        case 'playerLeft':
-          console.log(`Player ${data.playerId} left`);
+        case 'message':
+          chatContainer.innerHTML += `<p><strong>${data.username}:</strong> ${data.content}</p>`;
           break;
-        case 'gameUpdate':
-          console.log('Game update:', data.data);
+        case 'leave':
+          chatContainer.innerHTML += `<p>${data.username} left the chat</p>`;
           break;
-        // Add more cases based on your game's needs
+        case 'welcome':
+          chatContainer.innerHTML += `<p>${data.message}</p>`;
+          break;
       }
     }
 
-    // Your game logic and user interaction handling go here
+    function joinChat() {
+      const usernameInput = document.getElementById('username');
+      const username = usernameInput.value.trim();
+
+      if (username) {
+        // Send a 'join' message to the server
+        ws.send(JSON.stringify({ type: 'join', username }));
+
+        // Hide the username input and join button after joining
+        usernameInput.style.display = 'none';
+        document.querySelector('button').style.display = 'none';
+      }
+    }
 
   </script>
 </body>
