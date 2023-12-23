@@ -23,7 +23,7 @@
       transform: translateX(-50%);
       width: 50px;
       height: 50px;
-      border-radius: 50%;
+      border-radius: 5px; /* Updated to make it look more like a bird */
       background-color: blue;
       cursor: pointer;
     }
@@ -59,6 +59,8 @@
     const player = document.getElementById('player');
     let playerColor = 'blue';
     let score = 0;
+    let gravity = 2; // Adjust gravity as needed
+    let isJumping = false;
 
     function createObstacle() {
       const obstacle = document.createElement('div');
@@ -110,14 +112,40 @@
       createSpinner();
     }
 
-    player.addEventListener('click', () => {
-      player.style.bottom = `${parseInt(player.style.bottom) + 50}px`;
-      createObstacle();
-      createSpinner();
-    });
+    function jump() {
+      if (!isJumping) {
+        isJumping = true;
+        let jumpCount = 0;
+        const jumpInterval = setInterval(() => {
+          const currentPosition = parseInt(player.style.bottom);
+          player.style.bottom = `${currentPosition + 10}px`;
+
+          jumpCount++;
+          if (jumpCount > 20) {
+            clearInterval(jumpInterval);
+            isJumping = false;
+          }
+        }, 20);
+      }
+    }
+
+    player.addEventListener('click', jump);
+
+    function applyGravity() {
+      const currentPosition = parseInt(player.style.bottom);
+      if (currentPosition > 0) {
+        player.style.bottom = `${currentPosition - gravity}px`;
+      }
+    }
+
+    function gameLoop() {
+      applyGravity();
+      requestAnimationFrame(gameLoop);
+    }
 
     createObstacle();
     createSpinner();
+    gameLoop();
   </script>
 </body>
 </html>
